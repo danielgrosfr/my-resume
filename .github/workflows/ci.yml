@@ -1,18 +1,40 @@
-name: CI Pipeline
+name: CI
  
 on:
+
   push:
-    branches: [main]
+
+    branches: [ main ]
  
 jobs:
 
-  deploy:
+  build-and-deploy:
 
     runs-on: ubuntu-latest
-
+ 
     steps:
 
-      - name: SSH to Server
+      - name: Checkout code
+
+        uses: actions/checkout@v3
+ 
+      - name: Log in to Docker registry
+
+        run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login -u "${{ secrets.REGISTRY_USERNAME }}" --password-stdin
+ 
+      - name: Build Docker image
+
+        run: |
+
+          docker build -t ${{ secrets.REGISTRY_USERNAME }}/my-image-name:${{ github.run_number }} .
+ 
+      - name: Push Docker image
+
+        run: |
+
+          docker push ${{ secrets.REGISTRY_USERNAME }}/my-image-name:${{ github.run_number }}
+ 
+      - name: Deploy to server via SSH
 
         uses: appleboy/ssh-action@v1.0.3
 
@@ -22,14 +44,16 @@ jobs:
 
           username: ${{ vars.USERNAME }}
 
-          key: ${{ secrets.KEY }}
+          key: ${{ secrets.SECRET_KEY }}
 
           script: |
 
-            docker stop resume || echo ""
+            docker stop resume || true
 
-            docker rm resume || echo ""
+            docker rm resume || true
+
+            docker pull ${{ secrets.REGISTRY_USERNAME }}/my-image-name:${{ github.run_number }}
 
             docker run -d --name resume -p 8080:5001 ${{ secrets.REGISTRY_USERNAME }}/my-image-name:${{ github.run_number }}
-
+ 
  
