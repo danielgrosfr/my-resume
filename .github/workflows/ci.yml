@@ -22,7 +22,7 @@ jobs:
 
           username: ${{ vars.USERNAME }}
 
-          key: ${{ secrets.SECRET_KEY }}
+          key: ${{ secrets.KEY }}
 
           script: |
 
