@@ -38,7 +38,7 @@ jobs:
       - name: Scan docker image for vulnerabilities
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: "my-app:latest"  # Scans the built image
+          image-ref: "${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPO_NAME}}:${{env.IMAGE_TAG}}"  # Scans the built image
           format: "table"
           exit-code: "1"
           severity: "CRITICAL,HIGH"
